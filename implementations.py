@@ -1,4 +1,23 @@
-"""Required ML methods for Project 1 (NumPy only)."""
+"""Required ML methods for Project 1 (NumPy only).
+
+Contents:
+    Helpers
+        sigmoid, mse_loss, mse_gradient, logistic_loss, logistic_gradient,
+        gradient_descent (generic update loop shared by all iterative methods)
+    Linear regression
+        mean_squared_error_gd   gradient descent
+        mean_squared_error_sgd  stochastic gradient descent (batch size 1)
+        least_squares           normal equations
+        ridge_regression        normal equations with L2 penalty
+    Logistic regression (labels in {0, 1})
+        logistic_regression      gradient descent
+        reg_logistic_regression  gradient descent with L2 penalty
+
+Conventions:
+    y has shape (N,), tx has shape (N, D), weights have shape (D,).
+    Every method returns (w, loss): the last weights and the loss at those weights.
+    The loss of the regularized methods excludes the penalty term.
+"""
 
 import numpy as np
 
