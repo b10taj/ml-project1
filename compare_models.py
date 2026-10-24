@@ -30,8 +30,14 @@ def fit_logistic(lambda_, max_iters, gamma):
     )[0]
 
 
-def cross_validate(x, y01, names, fit, max_categories=0, max_nan_rate=0.8):
-    """Mean F1 and accuracy over K folds, with the threshold tuned on each training fold."""
+def cross_validate(
+    x, y01, names, fit, max_categories=0, max_nan_rate=0.8, tune_threshold=True
+):
+    """Mean F1 and accuracy over K folds.
+
+    The threshold is tuned on each training fold, or fixed at 0 (probability 0.5)
+    if tune_threshold is False.
+    """
     folds = k_fold_indices(len(y01), K)
     f1s, accs = [], []
     for k in range(K):
@@ -41,7 +47,9 @@ def cross_validate(x, y01, names, fit, max_categories=0, max_nan_rate=0.8):
         tx_train = transform_features(x[train], params).astype(np.float64)
         tx_val = transform_features(x[val], params).astype(np.float64)
         w = fit(y01[train], tx_train)
-        threshold, _ = best_threshold(y01[train], tx_train @ w)
+        threshold = 0.0
+        if tune_threshold:
+            threshold, _ = best_threshold(y01[train], tx_train @ w)
         pred = (tx_val @ w >= threshold).astype(int)
         f1s.append(f1_score(y01[val], pred))
         accs.append(accuracy(y01[val], pred))
