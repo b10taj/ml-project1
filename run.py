@@ -20,8 +20,15 @@ OUTPUT_PATH = "submission.csv"
 SEED = 0
 
 LAMBDA = 1e-3
-MAX_ITERS = 300
-GAMMA = 0.1
+MAX_ITERS = 600
+GAMMA = 0.3
+FEATURES = {
+    "max_nan_rate": 1.0,  # keep every non-constant column
+    "flag_min_nan": 0.02,  # "is missing" flags
+    "n_top": 20,  # squares and pairwise products of the 20 most correlated columns
+    "squares": True,
+    "pairs": True,
+}
 
 
 def main():
@@ -32,10 +39,11 @@ def main():
     print("[1/5] Loading CSV files (takes a few minutes)...", flush=True)
     x_train, x_test, y_train, train_ids, test_ids = load_csv_data(DATA_PATH)
     names = read_column_names(DATA_PATH)
+    y01 = (y_train == 1).astype(int)  # logistic regression expects labels in {0, 1}
     print(
         f"      train: {x_train.shape[0]} rows x {x_train.shape[1]} features, "
         f"test: {x_test.shape[0]} rows, "
-        f"positive rate: {np.mean(y_train == 1):.2%} ({time.time() - start:.0f}s)",
+        f"positive rate: {np.mean(y01):.2%} ({time.time() - start:.0f}s)",
         flush=True,
     )
 
@@ -49,13 +57,18 @@ def main():
         flush=True,
     )
 
-    print("[3/5] Building features (drop, impute, standardize)...", flush=True)
-    params = fit_features(x_train, names)
+    print(
+        "[3/5] Building features (impute, standardize, missing flags, "
+        "squares, pairs)...",
+        flush=True,
+    )
+    params = fit_features(x_train, names, y=y01, **FEATURES)
     tx_train = transform_features(x_train, params).astype(np.float64)
     tx_test = transform_features(x_test, params).astype(np.float64)
     print(
-        f"      kept {len(params['numeric'])} of {x_train.shape[1]} columns "
-        f"(+ bias), feature matrix {tx_train.shape}",
+        f"      kept {len(params['numeric'])} of {x_train.shape[1]} columns, "
+        f"{len(params['flags'])} missing flags, {len(params['squares'])} squares, "
+        f"{len(params['pairs'])} pairs; feature matrix {tx_train.shape} (with bias)",
         flush=True,
     )
 
@@ -64,7 +77,6 @@ def main():
         f"(lambda={LAMBDA}, {MAX_ITERS} iterations, gamma={GAMMA})...",
         flush=True,
     )
-    y01 = (y_train == 1).astype(int)  # logistic regression expects labels in {0, 1}
     w, loss = reg_logistic_regression(
         y01, tx_train, LAMBDA, np.zeros(tx_train.shape[1]), MAX_ITERS, GAMMA
     )

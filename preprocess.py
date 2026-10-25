@@ -68,7 +68,17 @@ def apply_special_codes(x, rules, names):
     return x
 
 
-def fit_features(x, names, max_nan_rate=0.8, max_categories=0):
+def fit_features(
+    x,
+    names,
+    max_nan_rate=0.8,
+    max_categories=0,
+    flag_min_nan=None,
+    n_top=0,
+    squares=False,
+    pairs=False,
+    y=None,
+):
     """Learn the feature processing on (cleaned) training data.
 
     Args:
@@ -77,6 +87,12 @@ def fit_features(x, names, max_nan_rate=0.8, max_categories=0):
         max_nan_rate: columns with a larger fraction of NaN are dropped
         max_categories: columns with 3..max_categories distinct values are one-hot
             encoded (NaN becomes its own level). 0 disables one-hot encoding.
+        flag_min_nan: if set, add a 0/1 "is missing" feature for each kept column
+            whose NaN rate is at least this value
+        n_top: number of columns most correlated with y used for squares and pairs
+        squares: add squares of the n_top columns
+        pairs: add pairwise products of the n_top columns
+        y: labels in {0, 1}, required when n_top > 0
 
     Returns:
         dict of parameters for transform_features
@@ -102,13 +118,48 @@ def fit_features(x, names, max_nan_rate=0.8, max_categories=0):
     for j in onehot:
         values = np.unique(x[:, j][~np.isnan(x[:, j])])
         levels[j] = values[1:]  # first level is the reference, avoids collinearity
-    return {
+    params = {
         "numeric": numeric,
         "median": median,
         "mean": mean,
         "std": std,
         "levels": levels,
+        "flags": [],
+        "squares": [],
+        "pairs": [],
     }
+
+    if flag_min_nan is not None:
+        params["flags"] = [j for j in numeric if nan_rate[j] >= flag_min_nan]
+    if n_top > 0:
+        z = (filled - mean) / std
+        corr = np.abs(z.T @ (y - y.mean())) / (z.std(axis=0) + 1e-12)
+        top = [int(i) for i in np.argsort(corr)[-n_top:]]
+        if squares:
+            params["squares"] = top
+        if pairs:
+            params["pairs"] = [(a, b) for a in top for b in top if a < b]
+    extra = _extra_features(x, params)
+    if extra.shape[1] > 0:
+        params["extra_mean"] = extra.mean(axis=0)
+        params["extra_std"] = np.where(extra.std(axis=0) == 0, 1.0, extra.std(axis=0))
+    return params
+
+
+def _extra_features(x, params):
+    """Missing-value flags, squares and pairwise products (before standardization)."""
+    numeric = params["numeric"]
+    z = np.where(np.isnan(x[:, numeric]), params["median"], x[:, numeric])
+    z = (z - params["mean"]) / params["std"]
+    blocks = [np.zeros((x.shape[0], 0), dtype=np.float32)]
+    if params["flags"]:
+        blocks.append(np.isnan(x[:, params["flags"]]).astype(np.float32))
+    if params["squares"]:
+        blocks.append((z[:, params["squares"]] ** 2).astype(np.float32))
+    if params["pairs"]:
+        a, b = zip(*params["pairs"])
+        blocks.append((z[:, list(a)] * z[:, list(b)]).astype(np.float32))
+    return np.hstack(blocks)
 
 
 def transform_features(x, params):
@@ -122,4 +173,7 @@ def transform_features(x, params):
         block = (col[:, None] == levels[None, :]).astype(np.float64)
         blocks.append(block)
         blocks.append(np.isnan(col)[:, None].astype(np.float64))  # "missing" level
+    extra = _extra_features(x, params)
+    if extra.shape[1] > 0:
+        blocks.append((extra - params["extra_mean"]) / params["extra_std"])
     return np.hstack(blocks).astype(np.float32)
