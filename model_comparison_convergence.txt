@@ -1,0 +1,8 @@
+4-fold CV, threshold tuned on each training fold
+
+logistic lambda=0.001 gamma=0.4 iters=600          F1=0.4250 acc=0.8681
+logistic lambda=0.001 gamma=0.4 iters=3000         F1=0.4248 acc=0.8688
+logistic lambda=0.001 gamma=0.4 iters=1500         F1=0.4248 acc=0.8687
+logistic lambda=0.001 gamma=0.2 iters=3000         F1=0.4248 acc=0.8687
+logistic lambda=0.001 gamma=0.2 iters=1500         F1=0.4247 acc=0.8687
+logistic lambda=0.001 gamma=0.2 iters=600          F1=0.4244 acc=0.8707
