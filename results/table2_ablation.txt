@@ -1,0 +1,9 @@
+Table 2 - ablations, 4-fold CV, logistic lambda=0.001, gamma=0.1, 300 steps
+
+initial pipeline                 F1=0.4229 +- 0.0021 acc=0.8675 dim=193 (153s)
+no special-code cleaning         F1=0.4070 +- 0.0022 acc=0.8632 dim=194 (156s)
+no threshold tuning (0.5)        F1=0.2047 +- 0.0057 acc=0.9144 dim=193 (157s)
+max NaN rate 0.5                 F1=0.4214 +- 0.0033 acc=0.8663 dim=164 (140s)
+max NaN rate 0.95                F1=0.4238 +- 0.0025 acc=0.8705 dim=241 (199s)
+keep all non-constant columns    F1=0.4258 +- 0.0039 acc=0.8734 dim=308 (249s)
+one-hot (<= 8 levels)            F1=0.4190 +- 0.0021 acc=0.8681 dim=362 (273s)

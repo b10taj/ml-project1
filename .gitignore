@@ -225,3 +225,5 @@ data/
 *.zip
 
 .vscode
+# Per-fold checkpoints of long experiments
+results/checkpoints/

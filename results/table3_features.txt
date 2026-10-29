@@ -1,0 +1,7 @@
+Table 3 - feature engineering, 4-fold CV, logistic lambda=0.001, gamma=0.1, 300 steps, all non-constant columns kept
+
+baseline (all columns)               F1=0.4258 +- 0.0039 acc=0.8734 dim=308 (252s)
++ missing flags (NaN rate >= 2%)     F1=0.4339 +- 0.0030 acc=0.8757 dim=552 (379s)
++ squares of top 30                  F1=0.4272 +- 0.0028 acc=0.8744 dim=338 (299s)
++ pairs of top 20                    F1=0.4277 +- 0.0044 acc=0.8759 dim=498 (366s)
++ flags, squares and pairs           F1=0.4368 +- 0.0050 acc=0.8776 dim=762 (490s)

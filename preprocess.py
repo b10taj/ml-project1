@@ -163,17 +163,28 @@ def _extra_features(x, params):
 
 
 def transform_features(x, params):
-    """Apply the fitted processing. Returns float32 features with a bias column first."""
+    """Apply the fitted processing. Returns float32 features with a bias column first.
+
+    Blocks are written into one preallocated float32 matrix instead of being stacked,
+    which keeps the memory peak low for the 762-column feature set.
+    """
     numeric = params["numeric"]
     z = np.where(np.isnan(x[:, numeric]), params["median"], x[:, numeric])
     z = (z - params["mean"]) / params["std"]
-    blocks = [np.ones((x.shape[0], 1)), z]
+
+    n_onehot = sum(len(levels) + 1 for levels in params["levels"].values())
+    n_extra = len(params["flags"]) + len(params["squares"]) + len(params["pairs"])
+    out = np.empty((x.shape[0], 1 + len(numeric) + n_onehot + n_extra), dtype=np.float32)
+    out[:, 0] = 1.0
+    out[:, 1 : 1 + len(numeric)] = z
+    del z
+    c = 1 + len(numeric)
     for j, levels in params["levels"].items():
         col = x[:, j]
-        block = (col[:, None] == levels[None, :]).astype(np.float64)
-        blocks.append(block)
-        blocks.append(np.isnan(col)[:, None].astype(np.float64))  # "missing" level
-    extra = _extra_features(x, params)
-    if extra.shape[1] > 0:
-        blocks.append((extra - params["extra_mean"]) / params["extra_std"])
-    return np.hstack(blocks).astype(np.float32)
+        out[:, c : c + len(levels)] = col[:, None] == levels[None, :]
+        out[:, c + len(levels)] = np.isnan(col)  # "missing" level
+        c += len(levels) + 1
+    if n_extra > 0:
+        extra = _extra_features(x, params)
+        out[:, c:] = (extra - params["extra_mean"]) / params["extra_std"]
+    return out

@@ -1,0 +1,9 @@
+Table 1 - model comparison, initial features, 4-fold CV, threshold tuned on each training fold
+
+always negative            F1=0.0000 acc=0.9117 (no model, for reference)
+ridge lambda=1e-3          F1=0.4175 +- 0.0041 acc=0.8598 dim=193 (54s)
+ridge lambda=1e-2          F1=0.4167 +- 0.0038 acc=0.8610 dim=193 (52s)
+ridge lambda=1e-1          F1=0.4139 +- 0.0034 acc=0.8639 dim=193 (54s)
+logistic lambda=0          F1=0.4221 +- 0.0032 acc=0.8696 dim=193 (148s)
+logistic lambda=1e-4       F1=0.4221 +- 0.0032 acc=0.8696 dim=193 (153s)
+logistic lambda=1e-3       F1=0.4229 +- 0.0021 acc=0.8675 dim=193 (147s)

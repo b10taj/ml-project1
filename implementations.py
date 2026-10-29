@@ -31,7 +31,9 @@ def sigmoid(t):
     Returns:
         sigmoid of t, same shape as t
     """
-    return 1 / (1 + np.exp(-t))
+    # exp(-|t|) never overflows; both branches are algebraically equal to 1 / (1 + exp(-t)).
+    e = np.exp(-np.abs(t))
+    return np.where(t >= 0, 1 / (1 + e), e / (1 + e))
 
 
 def mse_loss(y, tx, w):
@@ -75,7 +77,8 @@ def logistic_loss(y, tx, w):
         scalar logistic loss
     """
     # logaddexp(0, z) = log(1 + exp(z)) without overflow for large z.
-    return np.mean(np.logaddexp(0, tx.dot(w)) - y * tx.dot(w))
+    z = tx.dot(w)
+    return np.mean(np.logaddexp(0, z) - y * z)
 
 
 def logistic_gradient(y, tx, w):
