@@ -174,7 +174,9 @@ def transform_features(x, params):
 
     n_onehot = sum(len(levels) + 1 for levels in params["levels"].values())
     n_extra = len(params["flags"]) + len(params["squares"]) + len(params["pairs"])
-    out = np.empty((x.shape[0], 1 + len(numeric) + n_onehot + n_extra), dtype=np.float32)
+    out = np.empty(
+        (x.shape[0], 1 + len(numeric) + n_onehot + n_extra), dtype=np.float32
+    )
     out[:, 0] = 1.0
     out[:, 1 : 1 + len(numeric)] = z
     del z

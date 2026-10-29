@@ -77,8 +77,12 @@ if __name__ == "__main__":
         save_checkpoint(
             "threshold",
             k,
-            {"chosen": chosen[-1], "f1": [float(v) for v in f1[-1]],
-             "prec": [float(v) for v in prec[-1]], "rec": [float(v) for v in rec[-1]]},
+            {
+                "chosen": chosen[-1],
+                "f1": [float(v) for v in f1[-1]],
+                "prec": [float(v) for v in prec[-1]],
+                "rec": [float(v) for v in rec[-1]],
+            },
         )
         del tx_train, tx_val  # free memory before building the next fold
 
@@ -94,7 +98,9 @@ if __name__ == "__main__":
         log(f"{p:.2f}  {a:.4f}  {b:.4f}    {c:.4f}")
 
     os.makedirs("figures", exist_ok=True)
-    plt.rcParams.update({"font.size": 8, "font.family": "serif", "mathtext.fontset": "cm"})
+    plt.rcParams.update(
+        {"font.size": 8, "font.family": "serif", "mathtext.fontset": "cm"}
+    )
     fig, ax = plt.subplots(figsize=(3.4, 2.1))
     ax.plot(PROBS, f1, color="#1f4e9c", lw=1.8, label="F$_1$")
     ax.plot(PROBS, prec, color="#c0504d", lw=1.1, ls="--", label="Precision")
@@ -102,12 +108,19 @@ if __name__ == "__main__":
     ax.axvline(p_star, color="0.25", lw=0.8)
     ax.axvline(0.5, color="0.6", lw=0.8, ls="--")
     ax.annotate(
-        f"tuned ({p_star:.2f})", (p_star, 0.9), xytext=(4, 0),
-        textcoords="offset points", fontsize=7,
+        f"tuned ({p_star:.2f})",
+        (p_star, 0.9),
+        xytext=(4, 0),
+        textcoords="offset points",
+        fontsize=7,
     )
     ax.annotate(
-        "default (0.5)", (0.5, 0.9), xytext=(4, 0),
-        textcoords="offset points", fontsize=7, color="0.4",
+        "default (0.5)",
+        (0.5, 0.9),
+        xytext=(4, 0),
+        textcoords="offset points",
+        fontsize=7,
+        color="0.4",
     )
     ax.set_xlabel("Decision threshold on predicted probability")
     ax.set_xlim(PROBS[0], PROBS[-1])

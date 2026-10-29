@@ -15,7 +15,7 @@ Cross-validation estimates generalization on the training data; the AIcrowd scor
 
 ## Requirements
 
-- Python 3 (tested with 3.13) and NumPy (tested with 2.5).
+- Python 3 (tested with 3.13 and 3.14) and NumPy (tested with 2.4 and 2.5).
 - The model, preprocessing and all experiments use NumPy only, as required. Matplotlib is used only to draw the report figure (`threshold_curve.py`) and the plots of the exploration notebook.
 
 ## Data
